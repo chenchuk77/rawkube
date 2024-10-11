@@ -77,3 +77,39 @@ Below is the complete steps that were taken to create a kubernetes cluster from 
   172.31.2.128 rawkube-w02.kubernetes.local rawkube-w02
   ```
   
+* Generate CA certificate on jump
+  ```bash
+  {
+    openssl genrsa -out ca.key 4096
+    openssl req -x509 -new -sha512 -noenc \
+      -key ca.key -days 3653 \
+      -config ca.conf \
+      -out ca.crt
+  }
+  ```
+* Generate clients certificates
+```bash
+certs=(
+  "admin" "rawkube-w01" "rawkube-w02"
+  "kube-proxy" "kube-scheduler"
+  "kube-controller-manager"
+  "kube-api-server"
+  "service-accounts"
+) 
+
+for i in ${certs[*]}; do
+  openssl genrsa -out "${i}.key" 4096
+
+  openssl req -new -key "${i}.key" -sha256 \
+    -config "ca.conf" -section ${i} \
+    -out "${i}.csr"
+  
+  openssl x509 -req -days 3653 -in "${i}.csr" \
+    -copy_extensions copyall \
+    -sha256 -CA "ca.crt" \
+    -CAkey "ca.key" \
+    -CAcreateserial \
+    -out "${i}.crt"
+done
+
+```
