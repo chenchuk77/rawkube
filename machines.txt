@@ -1,0 +1,3 @@
+172.31.11.103 rawkube-m01.kubernetes.local rawkube-m01
+172.31.0.61   rawkube-w01.kubernetes.local rawkube-w01 10.200.0.0/24
+172.31.2.128  rawkube-w02.kubernetes.local rawkube-w02 10.200.1.0/24

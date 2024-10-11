@@ -1,0 +1,68 @@
+# rawkube
+
+### Creating a kubernetes cluster from scratch.
+This project is a fork of the original [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way).
+
+Below is the complete steps that were taken to create a kubernetes cluster from scratch.
+
+
+* create key-pair
+  ```bash
+  $ aws ec2 create-key-pair --key-name keypair-rawkube --query 'KeyMaterial' --output text > keypair-rawkube.pem --profile chen-dev-lumos
+  $ chmod 400 keypair-rawkube.pem
+  ```
+
+* create 4 vms Debian 12 (bookworm), 2GB RAM, 30GB HDD
+  ```bash
+  aws ec2 run-instances \
+    --image-id ami-0f482e737324c5ccf \
+    --instance-type t4g.small \
+    --count 4 --key-name keypair-rawkube \
+    --block-device-mappings '[{"DeviceName":"/dev/xvda","Ebs":{"VolumeSize":30,"VolumeType":"gp3"}}]' \
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=k8s-node}]' \
+    --region eu-west-1 \
+    --query 'Instances[*].InstanceId' \
+    --output text --profile chen-dev-lumos
+  ```
+* provisioned vm's
+  ```bash
+  rawkube-jump, i-0c9330c8f81e2df10, t4g.small, 54.171.217.112, 172.31.6.20
+  rawkube-m01,  i-02b39dfc1c765429e, t4g.small, 52.213.102.5,   172.31.11.103
+  rawkube-w01,  i-096612b3152415aaf, t4g.small, 3.254.150.235,  172.31.0.61
+  rawkube-w02,  i-004a045ea0fb1a04a, t4g.small, 3.255.231.141,  172.31.2.128
+  ```
+
+* connect to jumpbox and install packages
+  ```bash
+  $ ssh -i ./keypair-rawkube.pem admin@54.171.217.112                                                                                                                                ✔  13:54:03 
+    admin@ip-172-31-6-20:~$
+    admin@ip-172-31-6-20:~$ uname -mov
+    #1 SMP Debian 6.1.112-1 (2024-09-30) aarch64 GNU/Linux
+  $ sudo su -
+  (root) $ apt-get update && apt-get -y install wget curl vim openssl git
+  (root) $ git clone --depth 1 https://github.com/kelseyhightower/kubernetes-the-hard-way.git
+  (root) $ mkdir downloads
+  (root) $ wget -q --show-progress --https-only --timestamping -P downloads -i downloads.txt
+  ```
+
+* setup and verify kubectl
+  ```bash
+  (root) $ chmod +x downloads/kubectl
+  (root) $ cp downloads/kubectl /usr/local/bin/
+  (root) $ kubectl version --client
+  ```
+* manually create machines.txt with this content:
+  ```bash
+  172.31.11.103 rawkube-m01.kubernetes.local rawkube-m01
+  172.31.0.61   rawkube-w01.kubernetes.local rawkube-w01 10.200.0.0/24
+  172.31.2.128  rawkube-w02.kubernetes.local rawkube-w02 10.200.1.0/24
+  ```
+* enable root access via ssh for all nodes
+  ```bash
+  ssh admin@<PUBLIC_IP>
+  sudo su -
+  sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && systemctl restart sshd
+  ```
+
+
+
