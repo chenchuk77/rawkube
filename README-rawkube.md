@@ -88,28 +88,44 @@ Below is the complete steps that were taken to create a kubernetes cluster from 
   }
   ```
 * Generate clients certificates
-```bash
-certs=(
-  "admin" "rawkube-w01" "rawkube-w02"
-  "kube-proxy" "kube-scheduler"
-  "kube-controller-manager"
-  "kube-api-server"
-  "service-accounts"
-) 
-
-for i in ${certs[*]}; do
-  openssl genrsa -out "${i}.key" 4096
-
-  openssl req -new -key "${i}.key" -sha256 \
-    -config "ca.conf" -section ${i} \
-    -out "${i}.csr"
+  ```bash
+  certs=(
+    "admin" "rawkube-w01" "rawkube-w02"
+    "kube-proxy" "kube-scheduler"
+    "kube-controller-manager"
+    "kube-api-server"
+    "service-accounts"
+  ) 
+  for i in ${certs[*]}; do
+    openssl genrsa -out "${i}.key" 4096
   
-  openssl x509 -req -days 3653 -in "${i}.csr" \
-    -copy_extensions copyall \
-    -sha256 -CA "ca.crt" \
-    -CAkey "ca.key" \
-    -CAcreateserial \
-    -out "${i}.crt"
-done
+    openssl req -new -key "${i}.key" -sha256 \
+      -config "ca.conf" -section ${i} \
+      -out "${i}.csr"
+    
+    openssl x509 -req -days 3653 -in "${i}.csr" \
+      -copy_extensions copyall \
+      -sha256 -CA "ca.crt" \
+      -CAkey "ca.key" \
+      -CAcreateserial \
+      -out "${i}.crt"
+  done
+  ```
+* 04 - Upload clients certificates workers, then master)
+  ```bash
+  for host in rawkube-w01 rawkube-w02 ; do
+    ssh root@$host mkdir /var/lib/kubelet/
+    scp ca.crt root@$host:/var/lib/kubelet/
+    scp $host.crt root@$host:/var/lib/kubelet/kubelet.crt
+    scp $host.key root@$host:/var/lib/kubelet/kubelet.key
+  done
+  
+  scp ca.key ca.crt \
+    kube-api-server.key kube-api-server.crt \
+    service-accounts.key service-accounts.crt \
+    root@rawkube-m01:~/
+  
+  ```
 
-```
+* 05 - 
+
