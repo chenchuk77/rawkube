@@ -26,10 +26,10 @@ Below is the complete steps that were taken to create a kubernetes cluster from 
   ```
 * provisioned vm's
   ```bash
-  rawkube-jump, i-0c9330c8f81e2df10, t4g.small, 54.171.217.112, 172.31.6.20
-  rawkube-m01,  i-02b39dfc1c765429e, t4g.small, 52.213.102.5,   172.31.11.103
-  rawkube-w01,  i-096612b3152415aaf, t4g.small, 3.254.150.235,  172.31.0.61
-  rawkube-w02,  i-004a045ea0fb1a04a, t4g.small, 3.255.231.141,  172.31.2.128
+  rawkube-jump, i-0c9330c8f81e2df10, t4g.small, 34.247.114.198, 172.31.6.20
+  rawkube-m01,  i-02b39dfc1c765429e, t4g.small, 54.220.119.87,  172.31.11.103
+  rawkube-w01,  i-096612b3152415aaf, t4g.small, 52.17.53.116,   172.31.0.61
+  rawkube-w02,  i-004a045ea0fb1a04a, t4g.small, 54.76.215.169,  172.31.2.128
   ```
 
 * connect to jumpbox and install packages
@@ -64,5 +64,8 @@ Below is the complete steps that were taken to create a kubernetes cluster from 
   sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && systemctl restart sshd
   ```
 
-
+* stopping/starting/checking VM state :
+  ```bash
+  ./rawkube.sh <start|stop|status>   
+  ```
 
