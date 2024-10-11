@@ -69,3 +69,11 @@ Below is the complete steps that were taken to create a kubernetes cluster from 
   ./rawkube.sh <start|stop|status>   
   ```
 
+* Adding DNS resolving to all 4 VM's to `/etc/hosts` :
+  ```bash
+  # Rawkube (Kubernetes The Hard Way)
+  172.31.11.103 rawkube-m01.kubernetes.local rawkube-m01
+  172.31.0.61 rawkube-w01.kubernetes.local rawkube-w01
+  172.31.2.128 rawkube-w02.kubernetes.local rawkube-w02
+  ```
+  
